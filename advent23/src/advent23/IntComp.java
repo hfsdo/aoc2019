@@ -10,16 +10,18 @@ public class IntComp implements Runnable {
 
 	private List<Long> inputs = new ArrayList<Long>();
 	private List<IntComp> intCompList = new ArrayList<IntComp>();
-	
+	private NAT natComp;
+	private int inputsPointer = 0;
 	private long[] packet = new long[3];
 
-	public IntComp(List<IntComp> intComps, long address) {
+	public IntComp(List<IntComp> intComps, long address, NAT nat) {
 		// TODO Auto-generated constructor stub
 		packet[0] = -1;
 		packet[1] = -1;
 		packet[2] = -1;
 		intCompList = intComps;
 		inputs.add(address);
+		natComp = nat;
 	}
 	
 	@Override
@@ -33,6 +35,13 @@ public class IntComp implements Runnable {
 		inputs.add(y);
 	}
 	
+	
+	
+	public boolean isQueueEmpty() {
+		//System.out.printf("inputspointer:%d/%d%n", inputsPointer, inputs.size());
+		return inputs.size() == inputsPointer;
+	}
+	
 	private void output(long val) {
 		if (packet[0] == -1) {
 			packet[0] = val;
@@ -44,9 +53,13 @@ public class IntComp implements Runnable {
 			packet[0] = -1;
 			packet[1] = -1;
 			packet[2] = -1;
-		} else {
+		} else if (packet[2] == -1 && packet[0] == 255){
 			packet[2] = val;
-			System.out.printf("%d:X:%d:Y:%d", packet[0], packet[1], packet[2]);
+			natComp.setPacket(packet[1], packet[2]);
+			//System.out.printf("%d:X:%d:Y:%d%n", packet[0], packet[1], packet[2]);
+			packet[0] = -1;
+			packet[1] = -1;
+			packet[2] = -1;
 		}
 		
 		
@@ -84,7 +97,7 @@ public class IntComp implements Runnable {
 		Scanner s = new Scanner(System.in);
 
 		long pointer = 0;
-		int inputsPointer = 0;
+		
 		long offset = 0;
 		//int result = 0;
 
@@ -155,8 +168,8 @@ public class IntComp implements Runnable {
 				long a = (inputMap.get(pointer) / 100) % 10;
 				long input = -1;
 				if (inputsPointer != inputs.size()) {
-					
 					input = inputs.get(inputsPointer);
+					//System.out.println("input:"+input);
 					inputsPointer++;
 				}
 				//long a = (inputMap.get(pointer) / 100) % 10;
